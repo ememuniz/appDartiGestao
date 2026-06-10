@@ -4,12 +4,19 @@ import { PrismaService } from '../prisma/prisma.service';
 
 describe('AuthService - Registro', () => {
   let authService: AuthService;
-  let prismaService: PrismaService;
-
+  let prismaService: {
+    convite: {
+      findUnique: jest.Mock;
+    };
+  };
   beforeEach(() => {
     // Criamos instâncias "falsas" (mocks) apenas para o teste
-    prismaService = new PrismaService();
-    authService = new AuthService(prismaService);
+    prismaService = {
+      convite: {
+        findUnique: jest.fn(),
+      },
+    };
+    authService = new AuthService(prismaService as unknown as PrismaService);
   });
 
   it('deve dar erro se a senha for fraca', async () => {
@@ -24,6 +31,22 @@ describe('AuthService - Registro', () => {
     // Esperamos que a função "registrarMembro" dispare um erro
     await expect(authService.registrarMembro(dadosRegistro)).rejects.toThrow(
       'A senha não atende aos requisitos de segurança.',
+    );
+  });
+
+  it('deve dar erro se o código de convite não existir ou já tiver sido usado', async () => {
+    // 3. Isso continua funcionando perfeitamente e com autocompletação do Jest!
+    prismaService.convite.findUnique.mockResolvedValue(null);
+
+    const dadosRegistro = {
+      nomeCompleto: 'João da Silva',
+      email: 'joao@email.com',
+      senha: 'SenhaForte@2026',
+      codigoConvite: 'CONVITE-INEXISTENTE',
+    };
+
+    await expect(authService.registrarMembro(dadosRegistro)).rejects.toThrow(
+      'Código de convite inválido ou já utilizado.',
     );
   });
 });

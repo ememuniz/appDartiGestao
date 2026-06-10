@@ -23,6 +23,19 @@ export class AuthService {
         'A senha não atende aos requisitos de segurança.',
       );
     }
+    // 2. Busca o convite no banco de dados usando o Prisma
+    const convite = await this.prisma.convite.findUnique({
+      where: {
+        codigo: dados.codigoConvite,
+      },
+    });
+
+    // 3. Se o convite não existir ou a propriedade 'usado' for true, barramos o registro
+    if (!convite || convite.usado) {
+      throw new BadRequestException(
+        'Código de convite inválido ou já utilizado.',
+      );
+    }
     await Promise.resolve();
     // [Os próximos passos do registro entrarão aqui: verificar convite, criptografar senha, salvar...]
     return { registrado: true };
