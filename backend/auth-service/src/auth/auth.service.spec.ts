@@ -4,8 +4,12 @@ import { PrismaService } from '../prisma/prisma.service';
 
 describe('AuthService - Registro', () => {
   let authService: AuthService;
+
   let prismaService: {
     convite: {
+      findUnique: jest.Mock;
+    };
+    membro: {
       findUnique: jest.Mock;
     };
   };
@@ -13,6 +17,9 @@ describe('AuthService - Registro', () => {
     // Criamos instâncias "falsas" (mocks) apenas para o teste
     prismaService = {
       convite: {
+        findUnique: jest.fn(),
+      },
+      membro: {
         findUnique: jest.fn(),
       },
     };
@@ -47,6 +54,29 @@ describe('AuthService - Registro', () => {
 
     await expect(authService.registrarMembro(dadosRegistro)).rejects.toThrow(
       'Código de convite inválido ou já utilizado.',
+    );
+  });
+
+  it('deve dar erro se o email já estiver cadastrado', async () => {
+    prismaService.convite.findUnique.mockResolvedValue({
+      id: '1',
+      codigo: 'CONVITE-OK',
+      usado: false,
+    });
+    prismaService.membro.findUnique.mockResolvedValue({
+      id: 'user-existente',
+      email: 'joao@email.com',
+    });
+
+    const dadosRegistro = {
+      nomeCompleto: 'João da Silva',
+      email: 'joao@email.com',
+      senha: 'SenhaForte@2026',
+      codigoConvite: 'CONVITE-OK',
+    };
+
+    await expect(authService.registrarMembro(dadosRegistro)).rejects.toThrow(
+      'Email já cadastrado.',
     );
   });
 });

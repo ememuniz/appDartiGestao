@@ -1,5 +1,9 @@
 // backend/auth-service/src/auth/auth.service.ts
-import { Injectable, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  ConflictException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { isPasswordValid } from '../utils/password.validator';
 
@@ -29,12 +33,21 @@ export class AuthService {
         codigo: dados.codigoConvite,
       },
     });
-
     // 3. Se o convite não existir ou a propriedade 'usado' for true, barramos o registro
     if (!convite || convite.usado) {
       throw new BadRequestException(
         'Código de convite inválido ou já utilizado.',
       );
+    }
+    // 4/ Busca se já existe um membro com email informado.
+    const emailExistente = await this.prisma.membro.findUnique({
+      where: {
+        email: dados.email,
+      },
+    });
+
+    if (emailExistente) {
+      throw new ConflictException('Email já cadastrado.');
     }
     await Promise.resolve();
     // [Os próximos passos do registro entrarão aqui: verificar convite, criptografar senha, salvar...]
