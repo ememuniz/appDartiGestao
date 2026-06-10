@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  # Nome do nosso serviço de banco de dados
+  postgres_db:
+    image: postgres:16 # Imagem oficial do PostgreSQL versão 16
+    container_name: meubanco_postgres
+    restart: always # Se o Docker reiniciar, o banco reinicia junto
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: adminpassword
+      POSTGRES_DB: meudatabase
+    ports:
+      - "5432:5432" # Mapeia a porta do contêiner para o seu computador
+    volumes:
+      - postgres_data:/var/lib/postgresql/data # Salva os dados permanentemente
+
+# Declaração do volume para os dados não sumirem se o contêiner for apagado
+volumes:
+  postgres_data:

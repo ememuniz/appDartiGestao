@@ -1,0 +1,62 @@
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// 1. Definição dos Papéis (Enums)
+enum Papel {
+  PRESIDENTE
+  VICE_PRESIDENTE
+  DIRETOR
+  MEMBRO
+  ESTAGIARIO
+}
+
+// 2. Definição das Diretorias (Enums)
+enum Diretoria {
+  SEM_DIRETORIA
+  RECURSOS_HUMANOS
+  COMUNICACAO
+  HARDWARE
+  SOFTWARE
+  MULTIDISCIPLINARIDADE
+}
+
+// 3. Tabela de Membros (Usuários)
+model Membro {
+  id           String    @id @default(uuid())
+  nomeCompleto String
+  email        String    @unique
+  senha        String // Aqui guardaremos a senha criptografada (Hash)
+  papel        Papel // Definido via código de convite
+  diretoria    Diretoria @default(SEM_DIRETORIA) // Definido depois pelo presidente
+
+  // Dados opcionais preenchidos pós-login
+  nomeSocial String?
+  descricao  String?
+  skills     String[] // Array de textos para as habilidades
+  foto       String?
+  curso      String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relação para saber qual convite este membro usou
+  conviteUsado Convite? @relation(fields: [conviteId], references: [id])
+  conviteId    String?  @unique
+}
+
+// 4. Tabela de Códigos de Convite
+model Convite {
+  id        String   @id @default(uuid())
+  codigo    String   @unique
+  papel     Papel // O papel que este código vai dar a quem se registrar
+  usado     Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  // Relação inversa: aponta para o membro que usou
+  membro     Membro?
+}
