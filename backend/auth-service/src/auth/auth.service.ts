@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { isPasswordValid } from '../utils/password.validator';
+import * as bcrypt from 'bcrypt';
 
 interface RegistrarMembroDto {
   nomeCompleto: string;
@@ -39,7 +40,7 @@ export class AuthService {
         'Código de convite inválido ou já utilizado.',
       );
     }
-    // 4/ Busca se já existe um membro com email informado.
+    // 4. Busca se já existe um membro com email informado.
     const emailExistente = await this.prisma.membro.findUnique({
       where: {
         email: dados.email,
@@ -49,8 +50,28 @@ export class AuthService {
     if (emailExistente) {
       throw new ConflictException('Email já cadastrado.');
     }
+
+    // 5. Gera o Salt e faz o Hash da senha para protegê-la
+    const salt = await bcrypt.genSalt(10);
+    const senhaCriptografada = await bcrypt.hash(dados.senha, salt);
+
+    // 6. Cria o registro do membro no banco de dados
+    await this.prisma.membro.create({
+      data: {
+        nomeCompleto: dados.nomeCompleto,
+        email: dados.email,
+        senha: senhaCriptografada,
+        papel: convite.papel, // Herda o Enum do convite
+        conviteId: convite.id,
+      },
+    });
+
+    // 7. Inutiliza o convite usado
+    await this.prisma.convite.update({
+      where: { codigo: dados.codigoConvite },
+      data: { usado: true },
+    });
     await Promise.resolve();
-    // [Os próximos passos do registro entrarão aqui: verificar convite, criptografar senha, salvar...]
     return { registrado: true };
   }
 }

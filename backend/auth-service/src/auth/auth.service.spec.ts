@@ -8,9 +8,11 @@ describe('AuthService - Registro', () => {
   let prismaService: {
     convite: {
       findUnique: jest.Mock;
+      update: jest.Mock;
     };
     membro: {
       findUnique: jest.Mock;
+      create: jest.Mock;
     };
   };
   beforeEach(() => {
@@ -18,13 +20,15 @@ describe('AuthService - Registro', () => {
     prismaService = {
       convite: {
         findUnique: jest.fn(),
+        update: jest.fn(),
       },
       membro: {
         findUnique: jest.fn(),
+        create: jest.fn(),
       },
     };
     authService = new AuthService(prismaService as unknown as PrismaService);
-  });
+  }); //beforeEach serve para executar antes de todos os testes
 
   it('deve dar erro se a senha for fraca', async () => {
     // Tentamos registrar um membro com senha fraca
@@ -78,5 +82,48 @@ describe('AuthService - Registro', () => {
     await expect(authService.registrarMembro(dadosRegistro)).rejects.toThrow(
       'Email já cadastrado.',
     );
+  });
+
+  it('deve criptografar a senha, salvar o membro e marcar o convite como usado', async () => {
+    prismaService.convite.findUnique.mockResolvedValue({
+      id: '1',
+      codigo: 'CONVITE-OK',
+      usado: false,
+      papel: 'DIRETOR',
+    }); // Convite OK
+    prismaService.membro.findUnique.mockResolvedValue(null); // Não existe membro com esse email
+    prismaService.membro.create.mockResolvedValue({
+      id: 'novo-membro-uuid',
+      email: 'joao@email.com',
+    }); // Novo membro criado
+    prismaService.convite.update.mockResolvedValue({
+      id: '1',
+      usado: true,
+    }); // Convite usado
+
+    const dadosRegistro = {
+      nomeCompleto: 'João da Silva',
+      email: 'joao@email.com',
+      senha: 'SenhaForte@2026',
+      codigoConvite: 'CONVITE-OK',
+    };
+    const resultado = await authService.registrarMembro(dadosRegistro);
+
+    expect(resultado).toEqual({ registrado: true });
+
+    expect(prismaService.membro.create).toHaveBeenCalledWith({
+      data: {
+        nomeCompleto: 'João da Silva',
+        email: 'joao@email.com',
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        senha: expect.any(String),
+        papel: 'DIRETOR',
+        conviteId: '1',
+      },
+    });
+    expect(prismaService.convite.update).toHaveBeenCalledWith({
+      where: { codigo: 'CONVITE-OK' },
+      data: { usado: true },
+    });
   });
 });
