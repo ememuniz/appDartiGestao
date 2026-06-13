@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import styles from './registro.module.css'
+import Link from 'next/link';
 
 export default function RegistroPage() {
   const [formData, setFormData] = useState({
@@ -191,6 +192,14 @@ export default function RegistroPage() {
             <button type="submit" className={styles.button} disabled={carregando}>
               {carregando ? 'Processando...' : 'Validar e Registrar'}
             </button>
+
+            {/* 2. ADICIONE ESTE BLOCO LOGO ABAIXO DO BOTÃO */}
+            <div className={styles.loginRedirect}>
+              Já possui cadastro?
+              <Link href='/login' className={styles.loginLink}>
+                Faça login
+              </Link>
+            </div>
           </form>
         </div>
       </section>

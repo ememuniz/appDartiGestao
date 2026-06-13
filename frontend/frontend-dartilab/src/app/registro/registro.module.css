@@ -126,6 +126,23 @@
   margin-bottom: 1.5rem;
   text-align: center;
 }
+.loginRedirect {
+  margin-top:1.5rem;
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+.loginLink {
+  color: var(--darti-orange);
+  text-decoration: none;
+  font-weight: 600;
+  margin-left: 0.3rem;
+  transition: color 0.2s ease, text-decoration 0.2s ease;
+}
+.loginLink:hover {
+  color: #ffaa6b;
+  text-decoration: underline;
+}
 
 @media (max-width: 900px) {
   .banner {
