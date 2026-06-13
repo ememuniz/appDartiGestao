@@ -13,6 +13,11 @@ export default function RegistroPage() {
     codigoConvite: '',
   });
 
+  // Estado para feedbacks visuais
+  const [mensagemErro, setMensagemErro] = useState<string | null>(null);
+  const [cadastradoComSucesso, setCadastradoComSucesso] = useState(false);
+  const [carregando, setCarregando] = useState(false);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -20,8 +25,63 @@ export default function RegistroPage() {
 
   const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log('Dados a serem enviados:', formData);
-    // Aqui faremos a integração com o NestJS posteriormente
+    setMensagemErro(null);
+    setCarregando(true);
+
+    // Validação no front antes de gastar banda de rede
+    if (formData.senha !== formData.confirmacaoSenha) {
+      setMensagemErro('A senha e a confirmação de senha não coicidem.');
+      setCarregando(false);
+      return;
+    }
+
+    console.log(formData);
+
+    try {
+      // Requisição
+      const response = await fetch('http://localhost:3001/auth/registro', {
+        method: 'POST',
+        headers: {
+          'Content-type': 'application/json',
+        },
+        body: JSON.stringify({
+          nomeCompleto: formData.nomeCompleto,
+          email: formData.email,
+          senha: formData.senha,
+          confirmacaoSenha: formData.confirmacaoSenha,
+          codigoConvite: formData.codigoConvite
+        }),
+      });
+
+      // Transformando a resposta em JSON
+      const dadosResposta = await response.json() as { message?: string | string[] };
+
+      // Se algo deu errado
+      if (!response.ok) {
+        const erroApi = Array.isArray(dadosResposta.message) ?
+        dadosResposta.message[0] : dadosResposta.message || 'Ocorreu um erro ao realizar o registro';
+        throw new Error(erroApi);
+      }
+
+      // Se deu certo
+      setCadastradoComSucesso(true);
+      setFormData({
+        nomeCompleto: '',
+        email: '',
+        senha: '',
+        confirmacaoSenha: '',
+        codigoConvite: '',
+      });
+
+    } catch (error) {
+      if (error instanceof Error) {
+        setMensagemErro(error.message);
+      } else {
+        setMensagemErro('Erro inesperado na comunicação com o servidor.');
+      }
+    } finally {
+      setCarregando(false);
+    }
   };
   return (
     <main className={styles.container}>
@@ -51,6 +111,12 @@ export default function RegistroPage() {
         <div className={styles.formBox}>
           <h2 className={styles.formTitle}>Criar Conta</h2>
           <p className={styles.formSubtitle}>Insira seus dados e o seu código de convite</p>
+
+          {/* Exibição dos alertas de feedback */}
+          {mensagemErro && <div className={styles.alertError}>{mensagemErro}</div>}
+          {cadastradoComSucesso && <div className={styles.alertSuccess}>Conta criada com sucesso! Você já pode fazer login.</div>}
+
+          {/* Formulário de registro */}
           <form onSubmit={handleSubmit}>
             <div className={styles.inputGroup}>
               <label className={styles.label} htmlFor="nomeCompleto">Nome Completo</label>
@@ -122,12 +188,12 @@ export default function RegistroPage() {
               />
             </div>
 
-            <button type="submit" className={styles.button}>
-              Validar e Registrar
+            <button type="submit" className={styles.button} disabled={carregando}>
+              {carregando ? 'Processando...' : 'Validar e Registrar'}
             </button>
           </form>
         </div>
       </section>
     </main>
-  )
+  );
 }
