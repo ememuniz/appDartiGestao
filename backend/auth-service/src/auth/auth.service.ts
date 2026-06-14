@@ -82,6 +82,14 @@ export class AuthService {
         'Código de convite inválido ou já utilizado.',
       );
     }
+
+    const conviteJaVinculado = await this.prisma.membro.findUnique({
+      where: { conviteId: convite.id },
+    });
+
+    if (conviteJaVinculado) {
+      throw new ConflictException('Convite ja vinculado a outro membro.');
+    }
     // 4. Busca se já existe um membro com email informado.
     const emailExistente = await this.prisma.membro.findUnique({
       where: {
