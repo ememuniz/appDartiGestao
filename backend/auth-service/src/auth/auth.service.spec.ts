@@ -215,21 +215,28 @@ describe('AuthService - Registro', () => {
 });
 
 describe('AuthService - Recuperação de Senha', () => {
+  let service: AuthService;
+  beforeEach(() => {
+    service = new AuthService(
+      mockPrismaService as unknown as PrismaService,
+      mockJwtService as any,
+    );
+  });
   it('deve gerar e salvar um token de recuperação se o email existir', async () => {
     // Mock do usuário sendo encontrado
-    (prisma.membro.findUnique as jest.Mock).mockResolvedValue({
+    mockPrismaService.membro.findUnique.mockResolvedValue({
       id: '123',
       email: 'teste@ufma.br',
     });
     // Mock da atualização salvando o token
-    (prisma.membro.update as jest.Mock).mockResolvedValue(true);
+    mockPrismaService.membro.update.mockResolvedValue(true);
 
     const resultado = await service.solicitarRecuperacaoSenha('teste@ufma.br');
 
-    expect(prisma.membro.findUnique).toHaveBeenCalledWith({
+    expect(mockPrismaService.membro.findUnique).toHaveBeenCalledWith({
       where: { email: 'teste@ufma.br' },
     });
-    expect(prisma.membro.update).toHaveBeenCalled();
+    expect(mockPrismaService.membro.update).toHaveBeenCalled();
     expect(resultado).toHaveProperty('mensagem');
   });
 
@@ -243,28 +250,34 @@ describe('AuthService - Recuperação de Senha', () => {
     };
 
     // Mock de encontrar o token válido
-    (prisma.membro.findFirst as jest.Mock).mockResolvedValue(membroComTokenValido);
+    mockPrismaService.membro.findFirst.mockResolvedValue(membroComTokenValido);
     // Mock de atualizar a senha
-    (prisma.membro.update as jest.Mock).mockResolvedValue(true);
+    mockPrismaService.membro.update.mockResolvedValue(true);
 
     const resultado = await service.redefinirSenha(
-      'token-valido-123', 
+      'token-valido-123',
       novaSenha,
     );
 
-    expect(prisma.membro.findFirst).toHaveBeenCalledWith({
-      where: { tokenRecuperacao: 'token-valido-123' },
+    expect(mockPrismaService.membro.findFirst).toHaveBeenCalledWith({
+      where: {
+        tokenRecuperacao: 'token-valido-123',
+        expiracaoToken: {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          gt: expect.any(Date),
+        },
+      },
     });
-    expect(prisma.membro.update).toHaveBeenCalled();
+    expect(mockPrismaService.membro.update).toHaveBeenCalled();
     expect(resultado).toHaveProperty('mensagem');
   });
 
   it('deve lançar erro se o token for inválido ou estiver expirado', async () => {
     // Mock de não encontrar o token (inválido ou expirado)
-    (prisma.membro.findFirst as jest.Mock).mockResolvedValue(null);
+    mockPrismaService.membro.findFirst.mockResolvedValue(null);
 
     await expect(
-      service.redefinirSenha('token-invalido', 'NovaSenha123!')
+      service.redefinirSenha('token-invalido', 'NovaSenha123!'),
     ).rejects.toThrow('Token inválido ou expirado.');
   });
 });

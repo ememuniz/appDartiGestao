@@ -10,6 +10,7 @@ import { JwtService } from '@nestjs/jwt';
 import { isPasswordValid } from '../utils/password.validator';
 import * as bcrypt from 'bcrypt';
 import { LoginDto } from './dto/login.dto';
+import { randomBytes } from 'crypto';
 
 interface RegistrarMembroDto {
   nomeCompleto: string;
@@ -114,5 +115,76 @@ export class AuthService {
     });
     await Promise.resolve();
     return { registrado: true };
+  }
+
+  // SOLICITAR RECUPERAÇÃO DE SENHAS
+  async solicitarRecuperacaoSenha(
+    email: string,
+  ): Promise<{ mensagem: string }> {
+    const usuario = await this.prisma.membro.findUnique({
+      where: { email },
+    });
+
+    // Se o usuário não existir, retornamos a mensagem de segurança
+    if (!usuario) {
+      return {
+        mensagem:
+          'Se o e-mail existir em nossa base, um link de recuperação será enviado.',
+      };
+    }
+
+    // Gera um token aleatório seguro de 32 caracteres
+    const tokenRecuperacao = randomBytes(32).toString('hex');
+
+    //Define a expiração para 1 hora a partir de agora
+    const expiracaoToken = new Date();
+    expiracaoToken.setHours(expiracaoToken.getHours() + 1);
+
+    // Salva no banco de dados
+    await this.prisma.membro.update({
+      where: { id: usuario.id },
+      data: {
+        tokenRecuperacao,
+        expiracaoToken,
+      },
+    });
+
+    // TODO: Chamada para o serviço de email ficará aqui
+    return {
+      mensagem:
+        'Se o email existir em nossa base, um link de recuperação sera enviado.',
+    };
+  }
+
+  // REDEFINIR A SENHA
+  async redefinirSenha(
+    token: string,
+    novaSenha: string,
+  ): Promise<{ mensagem: string }> {
+    const usuario = await this.prisma.membro.findFirst({
+      where: {
+        tokenRecuperacao: token,
+        expiracaoToken: {
+          gt: new Date(),
+        },
+      },
+    });
+
+    if (!usuario) {
+      throw new UnauthorizedException('Token inválido ou expirado.');
+    }
+
+    const senhaCriptografada = await bcrypt.hash(novaSenha, 10);
+
+    await this.prisma.membro.update({
+      where: { id: usuario.id },
+      data: {
+        senha: senhaCriptografada,
+        tokenRecuperacao: null,
+        expiracaoToken: null,
+      },
+    });
+
+    return { mensagem: 'Senha redefinida com sucesso.' };
   }
 }
