@@ -112,7 +112,7 @@ describe('AuthService - Registro', () => {
     };
     authService = new AuthService(
       prismaService as unknown as PrismaService,
-      jwtServiceMock as any,
+      jwtServiceMock as unknown as JwtService,
     );
   }); //beforeEach serve para executar antes de todos os testes
 
@@ -219,7 +219,7 @@ describe('AuthService - Recuperação de Senha', () => {
   beforeEach(() => {
     service = new AuthService(
       mockPrismaService as unknown as PrismaService,
-      mockJwtService as any,
+      mockJwtService as unknown as JwtService,
     );
   });
   it('deve gerar e salvar um token de recuperação se o email existir', async () => {
