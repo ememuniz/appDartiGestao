@@ -1,6 +1,7 @@
 import { Controller, Post, Body, BadRequestException } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegistrarMembroDto } from './dto/registrar-membro.dto';
+import { LoginDto } from './dto/login.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -25,5 +26,10 @@ export class AuthController {
       senha: dados.senha,
       codigoConvite: dados.codigoConvite,
     });
+  }
+
+  @Post('login')
+  async login(@Body() dados: LoginDto) {
+    return this.authService.login(dados);
   }
 }

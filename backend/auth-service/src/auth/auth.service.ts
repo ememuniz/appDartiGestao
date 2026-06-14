@@ -1,12 +1,15 @@
 // backend/auth-service/src/auth/auth.service.ts
 import {
-  Injectable,
-  BadRequestException,
-  ConflictException,
+  Injectable, //Serve para injeção de dependência
+  BadRequestException, // Serve para rejeitar uma requisição
+  ConflictException, // Serve para rejeitar uma requisição devido a um conflito
+  UnauthorizedException, // Serve para rejeitar uma requisição devido a uma autorização
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { JwtService } from '@nestjs/jwt';
 import { isPasswordValid } from '../utils/password.validator';
 import * as bcrypt from 'bcrypt';
+import { LoginDto } from './dto/login.dto';
 
 interface RegistrarMembroDto {
   nomeCompleto: string;
@@ -18,8 +21,46 @@ interface RegistrarMembroDto {
 @Injectable()
 export class AuthService {
   // Injetamos a nossa ponte do Prisma para usar o banco de dados futuramente
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly jwtService: JwtService,
+  ) {}
 
+  // LOGIN
+  async login(
+    dados: LoginDto,
+  ): Promise<{ access_token: string; papel: string }> {
+    // Busca o usuário pelo e-mail
+    const usuario = await this.prisma.membro.findUnique({
+      where: { email: dados.email },
+    });
+
+    // Se não achar, barra por falta de autorização
+    if (!usuario) {
+      throw new UnauthorizedException('E-mail ou senha inválidos.');
+    }
+
+    // Compara a senha digitada com hash salvo no banco
+    const senhaValida = await bcrypt.compare(dados.senha, usuario.senha);
+    if (!senhaValida) {
+      throw new UnauthorizedException('E-mail ou senha inválidos.');
+    }
+
+    // Prepara as informações que vão dentro do Token
+    const payload = {
+      sub: usuario.id,
+      email: usuario.email,
+      papel: usuario.papel,
+    };
+
+    // Retorna o token assinado e o papel para o frontend guiar a rota
+    return {
+      access_token: this.jwtService.sign(payload),
+      papel: usuario.papel,
+    };
+  }
+
+  // REGISTRO
   async registrarMembro(dados: RegistrarMembroDto) {
     // 1. Usamos o validador de senha que criamos no primeiro passo do TDD
     if (!isPasswordValid(dados.senha)) {
