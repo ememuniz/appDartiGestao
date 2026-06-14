@@ -21,10 +21,6 @@ const mockJwtService = {
   sign: jest.fn(() => 'jwt_token_fake'),
 };
 
-const jwtServiceMock = {
-  sign: jest.fn(() => 'token_falso_para_teste'),
-};
-
 describe('AuthService - Login', () => {
   let service: AuthService; // instância do servico
   let prisma: typeof mockPrismaService; // instância do prisma
@@ -112,7 +108,7 @@ describe('AuthService - Registro', () => {
     };
     authService = new AuthService(
       prismaService as unknown as PrismaService,
-      jwtServiceMock as unknown as JwtService,
+      mockJwtService as unknown as JwtService,
     );
   }); //beforeEach serve para executar antes de todos os testes
 
