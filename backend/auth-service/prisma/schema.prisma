@@ -41,6 +41,10 @@ model Membro {
   foto       String?
   curso      String?
 
+  // Novos campos para recuperação de senha
+  tokenRecuperacao String?
+  expiracaoToken DateTime?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
