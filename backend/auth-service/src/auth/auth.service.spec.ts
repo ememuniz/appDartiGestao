@@ -1,6 +1,82 @@
 // backend/auth-service/src/auth/auth.service.spec.ts
+import { Test, TestingModule } from '@nestjs/testing';
 import { AuthService } from './auth.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { JwtService } from '@nestjs/jwt';
+import { UnauthorizedException } from '@nestjs/common';
+import * as bcrypt from 'bcrypt';
+
+// mockPrismaService cria um mock de um membro no banco de dados
+const mockPrismaService = {
+  membro: {
+    findUnique: jest.fn(),
+  },
+};
+
+// mockJwtService cria um mock de um token JWT fake
+const mockJwtService = {
+  sign: jest.fn(() => 'jwt_token_fake'),
+};
+
+describe('AuthService - Login', () => {
+  let service: AuthService; // instância do servico
+  let prisma: typeof mockPrismaService; // instância do prisma
+
+  // Antes de cada teste, criamos uma nova instância do servico
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        AuthService,
+        { provide: PrismaService, useValue: mockPrismaService },
+        { provide: JwtService, useValue: mockJwtService },
+      ],
+    }).compile();
+
+    service = module.get<AuthService>(AuthService);
+    prisma = module.get(PrismaService);
+  });
+
+  it('deve logar com sucesso e retornar o token e o papel do usuário', async () => {
+    const senhaPlana = 'SenhaSegura123!';
+    const senhaCriptografada = await bcrypt.hash(senhaPlana, 10);
+
+    prisma.membro.findUnique.mockResolvedValue({
+      id: 'user-id-123',
+      email: 'alan.turing@ufma.br',
+      senha: senhaCriptografada,
+      papel: 'PRESIDENTE',
+    });
+
+    const resultado = await service.login({
+      email: 'alan.turing@ufma.br',
+      senha: senhaPlana,
+    });
+
+    expect(resultado).toHaveProperty('access_token');
+    expect(resultado.papel).toBe('PRESIDENTE');
+  });
+
+  it('deve lançar UnauthorizedException se o e-mail não for encontrado', async () => {
+    prisma.membro.findUnique.mockResolvedValue(null);
+
+    await expect(
+      service.login({ email: 'inexistente@ufma.br', senha: '123' }),
+    ).rejects.toThrow(UnauthorizedException);
+  });
+
+  it('deve lançar UnauthorizedException se a senha estiver incorreta', async () => {
+    prisma.membro.findUnique.mockResolvedValue({
+      id: 'user-id-123',
+      email: 'alan.turing@ufma.br',
+      senha: 'hash_de_outra_senha',
+      papel: 'MEMBRO',
+    });
+
+    await expect(
+      service.login({ email: 'alan.turing@ufma.br', senha: 'senha_errada' }),
+    ).rejects.toThrow(UnauthorizedException);
+  });
+});
 
 describe('AuthService - Registro', () => {
   let authService: AuthService;
