@@ -109,7 +109,7 @@ model Feedback {
   // Auto-Relação -> Permite feedbacks de feedbacks
   // Se paiId for nulo, é o feedback primario do membro na tarefa
   // Se paiId contiver um ID, significa que é uma resposta
-  paiId                 String
+  paiId                 String?
   feedbackPai           Feedback?     @relation("RespostasFeedback", fields: [paiId], references: [id], onDelete: Cascade)
   respostas             Feedback[]    @relation("RespostasFeedback")
   createdAt             DateTime      @default(now())

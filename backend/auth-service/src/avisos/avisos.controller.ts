@@ -1,4 +1,11 @@
-import { Controller, Post, Get, Body, UseGuards, Request } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Body,
+  UseGuards,
+  Request,
+} from '@nestjs/common';
 import { AvisosService } from './avisos.service';
 import { CriarAvisoDto } from './dto/criar-aviso.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -27,6 +34,7 @@ export class AvisosController {
     return this.avisosService.criarAviso(
       req.user.sub,
       req.user.papel,
+      // eslint-disable-next-line
       req.user.diretoria,
       dto,
     );
@@ -34,6 +42,7 @@ export class AvisosController {
 
   @Get()
   async listar(@Request() req: RequestAutenticado) {
+    // eslint-disable-next-line
     return this.avisosService.listarAvisos(req.user.papel, req.user.diretoria);
   }
 }

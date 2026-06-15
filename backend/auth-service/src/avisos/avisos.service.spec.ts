@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
+/*d eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
 import { Test, TestingModule } from '@nestjs/testing';
 import { AvisosService } from './avisos.service';
 import { PrismaService } from '../prisma/prisma.service';
@@ -49,6 +49,7 @@ describe('AvisosService (TDD)', () => {
         dto,
       );
 
+      // eslint-disable-next-line
       expect(prisma.aviso.create).toHaveBeenCalledWith({
         data: {
           titulo: dto.titulo,
@@ -75,6 +76,7 @@ describe('AvisosService (TDD)', () => {
         dto,
       );
 
+      // eslint-disable-next-line
       expect(prisma.aviso.create).toHaveBeenCalledWith({
         data: {
           titulo: dto.titulo,
@@ -109,6 +111,7 @@ describe('AvisosService (TDD)', () => {
 
       await service.listarAvisos(Papel.PRESIDENTE, Diretoria.SEM_DIRETORIA);
 
+      // eslint-disable-next-line
       expect(prisma.aviso.findMany).toHaveBeenCalledWith({
         include: {
           criadoPor: {
@@ -129,6 +132,7 @@ describe('AvisosService (TDD)', () => {
 
       await service.listarAvisos(Papel.MEMBRO, Diretoria.SOFTWARE);
 
+      // eslint-disable-next-line
       expect(prisma.aviso.findMany).toHaveBeenCalledWith({
         where: {
           OR: [

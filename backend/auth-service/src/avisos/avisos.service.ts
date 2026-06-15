@@ -7,16 +7,24 @@ import { Papel, Diretoria } from '@prisma/client';
 export class AvisosService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async criarAviso(membroId: string, papel: Papel, diretoriaMembro: Diretoria, dto: CriarAvisoDto) {
+  async criarAviso(
+    membroId: string,
+    papel: Papel,
+    diretoriaMembro: Diretoria,
+    dto: CriarAvisoDto,
+  ) {
     // 1. Defesa em profundidade: Bloqueia Membros e Estagiários na camada de serviço
     if (papel === Papel.MEMBRO || papel === Papel.ESTAGIARIO) {
-      throw new ForbiddenException('Apenas a presidência e diretores podem emitir comunicados.');
+      throw new ForbiddenException(
+        'Apenas a presidência e diretores podem emitir comunicados.',
+      );
     }
 
     // 2. Regra de Negócio: Presidente e VP criam avisos Globais (null). Diretores criam na sua própria diretoria.
-    const diretoriaAlvo = (papel === Papel.PRESIDENTE || papel === Papel.VICE_PRESIDENTE) 
-      ? null 
-      : diretoriaMembro;
+    const diretoriaAlvo =
+      papel === Papel.PRESIDENTE || papel === Papel.VICE_PRESIDENTE
+        ? null
+        : diretoriaMembro;
 
     return this.prisma.aviso.create({
       data: {
