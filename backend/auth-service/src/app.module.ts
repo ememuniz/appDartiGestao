@@ -8,6 +8,7 @@ import { AuthController } from './auth/auth.controller';
 import { AvisosModule } from './avisos/avisos.module';
 import { TarefasModule } from './tarefas/tarefas.module';
 import { DashboardModule } from './dashboard/dashboard.module';
+import { MembrosModule } from './membros/membros.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { DashboardModule } from './dashboard/dashboard.module';
     AvisosModule,
     TarefasModule,
     DashboardModule,
+    MembrosModule,
   ],
   controllers: [AppController, AuthController],
   providers: [AppService, AuthService, PrismaService],
