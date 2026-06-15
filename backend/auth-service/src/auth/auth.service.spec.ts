@@ -149,10 +149,15 @@ describe('AuthService - Registro', () => {
       codigo: 'CONVITE-OK',
       usado: false,
     });
-    prismaService.membro.findUnique.mockResolvedValue({
-      id: 'user-existente',
-      email: 'joao@email.com',
-    });
+
+    // CORREÇÃO: Ensinamos o Jest a responder em ordem
+    prismaService.membro.findUnique
+      .mockResolvedValueOnce(null) // 1ª chamada (Verificar Convite): Retorna nulo, o convite tá livre!
+      .mockResolvedValueOnce({
+        // 2ª chamada (Verificar Email): Retorna usuário, e-mail tá ocupado!
+        id: 'user-existente',
+        email: 'joao@email.com',
+      });
 
     const dadosRegistro = {
       nomeCompleto: 'João da Silva',

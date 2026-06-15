@@ -34,7 +34,6 @@ export class JwtAuthGuard implements CanActivate {
         secret: process.env.JWT_SECRET || 'CHAVE_SUPER_SECRETA_DO_DARTILAB',
       });
       // Injeta os dados do utilizador (id, email, papel, etc) no Request
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       request['user'] = payload;
     } catch {
       throw new UnauthorizedException('Token inválido ou expirado.');
