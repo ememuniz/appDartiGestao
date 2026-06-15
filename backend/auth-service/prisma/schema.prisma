@@ -27,30 +27,36 @@ enum Diretoria {
 
 // 3. Tabela de Membros (Usuários)
 model Membro {
-  id           String    @id @default(uuid())
-  nomeCompleto String
-  email        String    @unique
-  senha        String // Aqui guardaremos a senha criptografada (Hash)
-  papel        Papel // Definido via código de convite
-  diretoria    Diretoria @default(SEM_DIRETORIA) // Definido depois pelo presidente
+  id           String    @id @default(uuid())     //id do membro
+  nomeCompleto String                             //nome completo dele
+  email        String    @unique                  //email - exigencia de ser o ultimo
+  senha        String                             //senha em hash
+  papel        Papel                              //presidente, vice, diretor, membro,estagiario
+  diretoria    Diretoria @default(SEM_DIRETORIA)  //sem_diretoria, recursos humanos, comunicação, hardware, software, multidisciplinaridade 
 
   // Dados opcionais preenchidos pós-login
-  nomeSocial String?
-  descricao  String?
-  skills     String[] // Array de textos para as habilidades
-  foto       String?
-  curso      String?
+  nomeSocial String?                              //Nome social que so o proprio usuario pode botar
+  descricao  String?                              //Descrição pessoal 
+  skills     String[]                             //Lista de habilidades
+  foto       String?                              //foto de perfil
+  curso      String?                              //Curso atual definido pelo proprio usuario
 
   // Novos campos para recuperação de senha
-  tokenRecuperacao String?
-  expiracaoToken DateTime?
+  tokenRecuperacao String?                        //Token enviado para o email
+  expiracaoToken DateTime?                        //Prazo de validade do token do email
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())              //Data que foi criada
+  updatedAt DateTime @updatedAt                   //Data que foi atualizado
 
   // Relação para saber qual convite este membro usou
-  conviteUsado Convite? @relation(fields: [conviteId], references: [id])
-  conviteId    String?  @unique
+  conviteUsado Convite? @relation(fields: [conviteId], references: [id]) //convite linkado com o convite registrado
+  conviteId    String?  @unique                   //Id do convite
+
+  // Novas relações adicionadas para o suporte dos dashboards
+  avisosCriados         Aviso[]       @relation("AvisosCriados")
+  tarefasAtribuidas     Tarefa[]      @relation("TarefasAtribuidas")
+  tarefasCriadas        Tarefa[]      @relation("TarefasCriadas")
+  feedbacksCriados      Feedback[]
 }
 
 // 4. Tabela de Códigos de Convite
@@ -64,3 +70,49 @@ model Convite {
   // Relação inversa: aponta para o membro que usou
   membro     Membro?
 }
+
+// 5. Tabela de Avisos
+model Aviso {
+  id                    String        @id @default(uuid())
+  titulo                String
+  conteudo              String
+  diretoria             Diretoria?       //Se for Null, o aviso é global
+  criadoPorId           String
+  criadoPor             Membro        @relation("AvisosCriados", fields: [criadoPorId], references: [id], onDelete: Cascade)
+  createdAt             DateTime      @default(now()) 
+}
+
+// 6. Tabela de Tarefa
+model Tarefa {
+  id                    String        @id @default(uuid())
+  nome                  String
+  descricao             String
+  dataEntrega           DateTime
+  linksExternos         String[]
+  atribuidoAId          String
+  atribuidoA            Membro        @relation("TarefasAtribuidas", fields: [atribuidoAId], references: [id], onDelete: Cascade)
+  criadoPorId           String
+  criadoPor             Membro        @relation("TarefasCriadas", fields: [criadoPorId], references: [id], onDelete: Cascade)
+  feedbacks             Feedback[]
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+}
+
+// 7. Tabela de Feedbacks
+model Feedback {
+  id                    String        @id @default(uuid())
+  conteudo              String
+  tarefaId              String
+  tarefa                Tarefa        @relation(fields: [tarefaId], references: [id], onDelete: Cascade)
+  authorId              String
+  autor                 Membro        @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  // Auto-Relação -> Permite feedbacks de feedbacks
+  // Se paiId for nulo, é o feedback primario do membro na tarefa
+  // Se paiId contiver um ID, significa que é uma resposta
+  paiId                 String
+  feedbackPai           Feedback?     @relation("RespostasFeedback", fields: [paiId], references: [id], onDelete: Cascade)
+  respostas             Feedback[]    @relation("RespostasFeedback")
+  createdAt             DateTime      @default(now())
+}
+
+
