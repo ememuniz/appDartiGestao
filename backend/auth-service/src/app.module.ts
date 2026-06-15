@@ -6,6 +6,8 @@ import { AuthService } from './auth/auth.service';
 import { PrismaService } from './prisma/prisma.service';
 import { AuthController } from './auth/auth.controller';
 import { AvisosModule } from './avisos/avisos.module';
+import { TarefasModule } from './tarefas/tarefas.module';
+import { DashboardModule } from './dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -15,6 +17,8 @@ import { AvisosModule } from './avisos/avisos.module';
       signOptions: { expiresIn: '1d' },
     }),
     AvisosModule,
+    TarefasModule,
+    DashboardModule,
   ],
   controllers: [AppController, AuthController],
   providers: [AppService, AuthService, PrismaService],
