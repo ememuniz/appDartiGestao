@@ -1,0 +1,195 @@
+.layoutWrapper {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--bg-dark);
+  color: var(--text-primary);
+}
+
+/* SIDEBAR STYLING */
+.sidebar {
+  width: 280px;
+  background-color: var(--bg-panel);
+  border-right: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  padding: 2rem 1.5rem;
+  position: fixed;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.logoBox {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 2.5rem;
+}
+
+/* PROFILE CARD */
+.profileCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: var(--bg-dark);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 1.5rem 1rem;
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+.avatarWrapper {
+  position: relative;
+  border-radius: 50%;
+  padding: 3px;
+  background: linear-gradient(135deg, var(--darti-blue) 0%, var(--darti-orange) 100%);
+  margin-bottom: 0.75rem;
+}
+
+.avatar {
+  border-radius: 50%;
+  background-color: var(--bg-panel);
+  object-fit: cover;
+}
+
+.userName {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+  color: var(--text-primary);
+}
+
+.userRoleBadge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  background-color: rgba(58, 109, 140, 0.2);
+  color: var(--darti-blue);
+  padding: 0.25rem 0.75rem;
+  border-radius: 50px;
+  text-transform: uppercase;
+  border: 1px solid rgba(58, 109, 140, 0.4);
+  margin-bottom: 0.5rem;
+}
+
+.userDiretoria {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  text-transform: capitalize;
+}
+
+/* NAVIGATION MENU */
+.navigation {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.menuTitle {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+  padding-left: 0.5rem;
+}
+
+.navLink {
+  display: flex;
+  align-items: center;
+  padding: 0.8rem 1rem;
+  border-radius: 8px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.navLink:hover {
+  background-color: rgba(255, 255, 255, 0.03);
+  color: var(--text-primary);
+}
+
+.activeLink {
+  background-color: rgba(58, 109, 140, 0.15);
+  color: var(--darti-blue);
+  font-weight: 600;
+  border-left: 4px solid var(--darti-blue);
+}
+
+/* OUT BUTTON */
+.logoutButton {
+  width: 100%;
+  padding: 0.8rem;
+  background-color: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--error-color);
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  margin-top: auto;
+}
+
+.logoutButton:hover {
+  background-color: rgba(239, 68, 68, 0.1);
+  border-color: var(--error-color);
+}
+
+/* MAIN CONTENT AND TOPBAR */
+.mainContent {
+  flex: 1;
+  margin-left: 280px; /* Compensação da largura fixa da sidebar */
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.topbar {
+  background-color: var(--bg-panel);
+  border-bottom: 1px solid var(--border-color);
+  padding: 1.5rem 2.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.topbar h2 {
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+.dateDisplay {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.pageBody {
+  padding: 2.5rem;
+  flex: 1;
+  background-color: var(--bg-dark);
+}
+
+/* LOADING STATE */
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background-color: var(--bg-dark);
+  color: var(--text-secondary);
+  gap: 1rem;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(58, 109, 140, 0.1);
+  border-left-color: var(--darti-blue);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
